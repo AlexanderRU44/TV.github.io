@@ -1,2 +1,205 @@
-#EXTINF:-1 tvg-logo="" group-title=Кино ,Бандит полицейский дьявол
-http://localhost:8090/stream/The+Gangster%2C+the+Cop%2C+the+Devil.2019.Remux.W.mkv?link=637acc8a2be17b163490fe9e03833ba6fffebe30&index=1&play
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2Ray GeoLab Pro</title>
+    <style>
+        :root {
+            --color-bg: #0d1117; --color-card: #161b22; --color-border: #30363d;
+            --color-fg-default: #c9d1d9; --color-fg-muted: #6e7681;
+            --color-blue: #58a6ff; --color-line-nums: #484f58;
+            --color-btn-bg: #21262d; --color-btn-blue: #1f6feb; --color-btn-red: #da3633;
+        }
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--color-bg); color: var(--color-fg-default); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .lang-panel { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
+        .lang-btn { background: transparent; border: 2px solid transparent; cursor: pointer; border-radius: 4px; padding: 2px; }
+        .lang-btn.active { border-color: var(--color-blue); }
+        .lang-btn img { width: 24px; display: block; }
+        h2 { text-align: center; margin: 0 0 20px 0; font-weight: 600; }
+        .container { display: flex; gap: 15px; flex-grow: 1; min-height: 0; }
+        .column { flex: 1; display: flex; flex-direction: column; background: var(--color-card); border-radius: 6px; border: 1px solid var(--color-border); overflow: hidden; }
+        .col-header { padding: 10px 15px; background: #161b22; border-bottom: 1px solid var(--color-border); font-size: 12px; color: var(--color-fg-muted); text-transform: uppercase; }
+        .editor-wrapper { display: flex; flex: 1; overflow: hidden; background: var(--color-bg); }
+        .line-numbers { width: 40px; padding: 10px 0; text-align: center; color: var(--color-line-nums); border-right: 1px solid var(--color-border); font-family: monospace; font-size: 13px; line-height: 20px; }
+        textarea { flex: 1; border: none; padding: 10px; background: transparent; color: inherit; font-family: monospace; font-size: 13px; line-height: 20px; resize: none; outline: none; }
+        .col-footer { padding: 10px; background: var(--color-card); border-top: 1px solid var(--color-border); display: grid; gap: 10px; }
+        .dual-button { grid-template-columns: 1fr 1fr; }
+        .quad-button { grid-template-columns: repeat(4, 1fr); }
+        .btn { background: var(--color-btn-bg); color: var(--color-fg-muted); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; opacity: 0.5; pointer-events: none; }
+        .btn.active { opacity: 1; pointer-events: auto; color: #fff; }
+        .btn-green.active { background: #238636; }
+        .btn-blue.active { background: #1f6feb; }
+        .btn-red.active { color: #f85149; }
+        #status { padding: 5px 15px; font-size: 12px; background: var(--color-card); border-top: 1px solid var(--color-border); color: var(--color-fg-muted); }
+        @media (max-width: 1000px) { .container { flex-direction: column; overflow-y: auto; } .column { min-height: 400px; } .quad-button { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="lang-panel">
+        <button class="lang-btn active" onclick="setLang('ru')" id="btn-ru"><img src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU"></button>
+        <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img src="https://flagpedia.net/data/flags/h80/gb.png" alt="EN"></button>
+    </div>
+
+    <h2 id="main-title">V2Ray GeoLab</h2>
+
+    <div class="container">
+        <div class="column">
+            <div class="col-header" id="label-input">Ввод</div>
+            <div class="editor-wrapper">
+                <div id="inputLineNums" class="line-numbers">1</div>
+                <textarea id="inputLinks" placeholder="Paste links here..." oninput="onInputLinks()" onscroll="syncScroll('input')"></textarea>
+            </div>
+            <div class="col-footer dual-button">
+                <button id="runBtn" class="btn btn-green" onclick="processLinks()">Пуск</button>
+                <button id="clrInputBtn" class="btn btn-red" onclick="clearInput()">Очистить</button>
+            </div>
+            <div id="status">> <span id="statusText">Ready</span></div>
+        </div>
+
+        <div class="column">
+            <div class="col-header">Результат</div>
+            <div class="editor-wrapper">
+                <div id="outputLineNums" class="line-numbers">1</div>
+                <textarea id="outputLinks" readonly onscroll="syncScroll('output')"></textarea>
+            </div>
+            <div class="col-footer quad-button">
+                <button class="btn" id="btn-copy" onclick="copyOutput()">Copy</button>
+                <button class="btn btn-blue" id="btn-retry" onclick="retryUnknown()">Retry</button>
+                <button class="btn btn-blue" id="btn-dl" onclick="downloadTxt()">Save</button>
+                <button class="btn btn-red" id="btn-clr" onclick="clearOutput()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const i18n = {
+        ru: { title: "V2Ray GeoLab", run: "Обработать", retry: "Перепроверить", done: "Готово!", wait: "Ждем API..." },
+        en: { title: "V2Ray GeoLab", run: "Process", retry: "Retry Unknown", done: "Finished!", wait: "API cooldown..." }
+    };
+
+    let currentLang = 'ru';
+    let fullResults = [];
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.id === 'btn-'+lang));
+        document.getElementById('main-title').innerText = i18n[lang].title;
+        document.getElementById('runBtn').innerText = i18n[lang].run;
+        document.getElementById('btn-retry').innerText = i18n[lang].retry;
+    }
+
+    function syncScroll(type) {
+        document.getElementById(type + 'LineNums').scrollTop = document.getElementById(type + 'Links').scrollTop;
+    }
+
+    function updateLineNumbers(type) {
+        const lines = document.getElementById(type + 'Links').value.split('\n').length;
+        document.getElementById(type + 'LineNums').innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+    }
+
+    function onInputLinks() {
+        updateLineNumbers('input');
+        const hasText = document.getElementById('inputLinks').value.trim().length > 0;
+        document.getElementById('runBtn').classList.toggle('active', hasText);
+        document.getElementById('clrInputBtn').classList.toggle('active', hasText);
+    }
+
+    function getHost(link) {
+        try {
+            let base = link.split('#')[0].trim();
+            if (base.startsWith('vmess://')) {
+                let str = base.replace('vmess://', '');
+                while (str.length % 4 !== 0) str += '=';
+                const json = JSON.parse(atob(str));
+                return json.add;
+            }
+            const urlPart = base.split('://')[1];
+            return (urlPart.split('@')[1] || urlPart).split(':')[0].split('?')[0].split('/')[0];
+        } catch (e) { return null; }
+    }
+
+    async function fetchCountry(host) {
+        if (!host) return "Error";
+        // Проверка: это IP или домен?
+        const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(host);
+        if (!isIp) return "Domain";
+
+        try {
+            // Используем надежный HTTPS API
+            const res = await fetch(`https://ipapi.co/${host}/json/`);
+            if (res.status === 429) return "LIMIT";
+            const data = await res.json();
+            return data.country_name || "Unknown";
+        } catch (e) {
+            console.error("Fetch error:", e);
+            return "Unknown";
+        }
+    }
+
+    async function processLinks() {
+        const input = document.getElementById('inputLinks').value.split('\n').filter(l => l.trim());
+        if (!input.length) return;
+
+        document.getElementById('runBtn').classList.remove('active');
+        fullResults = [];
+        
+        for (let i = 0; i < input.length; i++) {
+            const host = getHost(input[i]);
+            document.getElementById('statusText').innerText = `Processing ${i+1}/${input.length}: ${host}`;
+            
+            let country = await fetchCountry(host);
+            
+            if (country === "LIMIT") {
+                document.getElementById('statusText').innerText = i18n[currentLang].wait;
+                await new Promise(r => setTimeout(r, 3000));
+                country = await fetchCountry(host);
+            }
+
+            fullResults.push(`${input[i].split('#')[0]}#${country}`);
+            renderResults();
+            await new Promise(r => setTimeout(r, 1000)); // Пауза 1 сек
+        }
+        document.getElementById('statusText').innerText = i18n[currentLang].done;
+        onInputLinks();
+    }
+
+    async function retryUnknown() {
+        for (let i = 0; i < fullResults.length; i++) {
+            if (fullResults[i].endsWith('#Unknown') || fullResults[i].endsWith('#LIMIT')) {
+                const host = getHost(fullResults[i]);
+                const country = await fetchCountry(host);
+                if (country !== "Unknown" && country !== "LIMIT") {
+                    fullResults[i] = `${fullResults[i].split('#')[0]}#${country}`;
+                    renderResults();
+                }
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        }
+    }
+
+    function renderResults() {
+        const area = document.getElementById('outputLinks');
+        area.value = fullResults.join('\n');
+        updateLineNumbers('output');
+        const hasText = area.value.trim().length > 0;
+        document.getElementById('btn-copy').classList.toggle('active', hasText);
+        document.getElementById('btn-dl').classList.toggle('active', hasText);
+        document.getElementById('btn-clr').classList.toggle('active', hasText);
+        document.getElementById('btn-retry').classList.toggle('active', fullResults.some(l => l.includes('#Unknown')));
+    }
+
+    function clearInput() { document.getElementById('inputLinks').value = ""; onInputLinks(); }
+    function clearOutput() { fullResults = []; renderResults(); }
+    function copyOutput() { navigator.clipboard.writeText(document.getElementById('outputLinks').value); }
+    function downloadTxt() {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([document.getElementById('outputLinks').value], {type:'text/plain'}));
+        a.download = "configs.txt"; a.click();
+    }
+    setLang('ru');
+</script>
+</body>
+</html>
