@@ -1,205 +1,407 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V2Ray GeoLab Pro</title>
-    <style>
-        :root {
-            --color-bg: #0d1117; --color-card: #161b22; --color-border: #30363d;
-            --color-fg-default: #c9d1d9; --color-fg-muted: #6e7681;
-            --color-blue: #58a6ff; --color-line-nums: #484f58;
-            --color-btn-bg: #21262d; --color-btn-blue: #1f6feb; --color-btn-red: #da3633;
-        }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--color-bg); color: var(--color-fg-default); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .lang-panel { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
-        .lang-btn { background: transparent; border: 2px solid transparent; cursor: pointer; border-radius: 4px; padding: 2px; }
-        .lang-btn.active { border-color: var(--color-blue); }
-        .lang-btn img { width: 24px; display: block; }
-        h2 { text-align: center; margin: 0 0 20px 0; font-weight: 600; }
-        .container { display: flex; gap: 15px; flex-grow: 1; min-height: 0; }
-        .column { flex: 1; display: flex; flex-direction: column; background: var(--color-card); border-radius: 6px; border: 1px solid var(--color-border); overflow: hidden; }
-        .col-header { padding: 10px 15px; background: #161b22; border-bottom: 1px solid var(--color-border); font-size: 12px; color: var(--color-fg-muted); text-transform: uppercase; }
-        .editor-wrapper { display: flex; flex: 1; overflow: hidden; background: var(--color-bg); }
-        .line-numbers { width: 40px; padding: 10px 0; text-align: center; color: var(--color-line-nums); border-right: 1px solid var(--color-border); font-family: monospace; font-size: 13px; line-height: 20px; }
-        textarea { flex: 1; border: none; padding: 10px; background: transparent; color: inherit; font-family: monospace; font-size: 13px; line-height: 20px; resize: none; outline: none; }
-        .col-footer { padding: 10px; background: var(--color-card); border-top: 1px solid var(--color-border); display: grid; gap: 10px; }
-        .dual-button { grid-template-columns: 1fr 1fr; }
-        .quad-button { grid-template-columns: repeat(4, 1fr); }
-        .btn { background: var(--color-btn-bg); color: var(--color-fg-muted); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; opacity: 0.5; pointer-events: none; }
-        .btn.active { opacity: 1; pointer-events: auto; color: #fff; }
-        .btn-green.active { background: #238636; }
-        .btn-blue.active { background: #1f6feb; }
-        .btn-red.active { color: #f85149; }
-        #status { padding: 5px 15px; font-size: 12px; background: var(--color-card); border-top: 1px solid var(--color-border); color: var(--color-fg-muted); }
-        @media (max-width: 1000px) { .container { flex-direction: column; overflow-y: auto; } .column { min-height: 400px; } .quad-button { grid-template-columns: 1fr 1fr; } }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2Ray GeoLab</title>
+    <style>
+        :root {
+            --color-bg: #0d1117;
+            --color-card: #161b22;
+            --color-border: #30363d;
+            --color-fg-default: #c9d1d9;
+            --color-fg-muted: #6e7681;
+            --color-accent: #238636;
+            --color-blue: #58a6ff;
+            --color-line-nums: #484f58;
+            --color-btn-bg: #21262d;
+            --color-btn-blue: #1f6feb;
+            --color-btn-red: #da3633;
+        }
+
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background-color: var(--color-bg); color: var(--color-fg-default); 
+            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; 
+        }
+
+        .lang-panel { position: absolute; top: 32px; right: 25px; display: flex; gap: 10px; z-index: 100; }
+        .lang-btn { 
+            background: transparent; border: 2px solid transparent; padding: 2px; 
+            cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+        }
+        .lang-btn img { width: 30px; height: auto; display: block; border-radius: 2px; }
+        .lang-btn.active { border-color: var(--color-blue); }
+
+        h2 { 
+            color: #f0f6fc; font-size: 28px; font-weight: 600; margin: 0 0 25px 0; 
+            text-align: center; letter-spacing: -0.5px; flex-shrink: 0; 
+        }
+        
+        .container { 
+            display: flex; gap: 15px; max-width: 1600px; margin: 0 auto; width: 100%; 
+            flex-grow: 1; min-height: 0; height: 82vh; 
+        }
+        
+        .column { 
+            flex: 1; display: flex; flex-direction: column; 
+            background: var(--color-card); border-radius: 6px; 
+            border: 1px solid var(--color-border); min-width: 0; overflow: hidden;
+        }
+
+        .col-header { 
+            padding: 10px 15px; background-color: #161b22; 
+            border-bottom: 1px solid var(--color-border); 
+            display: flex; align-items: center; justify-content: space-between;
+            height: 50px; box-sizing: border-box;
+        }
+        .col-header h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .editor-wrapper { display: flex; flex: 1; overflow: hidden; background-color: var(--color-bg); }
+
+        .line-numbers {
+            width: 45px; padding: 12px 0; text-align: center;
+            background: var(--color-card); color: var(--color-line-nums);
+            border-right: 1px solid var(--color-border); user-select: none;
+            overflow: hidden; font-family: ui-monospace, monospace; 
+            font-size: 14px; line-height: 22px; 
+        }
+
+        textarea { 
+            flex: 1; border: none; padding: 12px; background: transparent; color: var(--color-fg-default); 
+            font-family: ui-monospace, SFMono-Regular, monospace; 
+            font-size: 14px; line-height: 22px; 
+            resize: none; outline: none; overflow: auto; white-space: pre;
+        }
+
+        .search-box { padding: 10px 15px; background: var(--color-card); border-bottom: 1px solid var(--color-border); display: flex; gap: 8px; }
+        .search-input {
+            flex: 1; background: var(--color-bg); border: 1px solid var(--color-border);
+            color: var(--color-fg-default); border-radius: 6px; padding: 6px 12px; font-size: 14px; outline: none; height: 34px;
+        }
+
+        .col-footer { padding: 12px 15px; background-color: var(--color-card); border-top: 1px solid var(--color-border); display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .col-footer.dual-button { grid-template-columns: 1fr 1fr; }
+        .col-footer.tri-button { grid-template-columns: repeat(3, 1fr); }
+
+        .btn-vmerge {
+            background-color: var(--color-btn-bg);
+            color: var(--color-fg-muted);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+            opacity: 0.5;
+            box-shadow: 0 1px 0 rgba(1, 4, 9, 0.04);
+        }
+
+        .btn-vmerge.active {
+            color: var(--color-fg-default);
+            cursor: pointer;
+            opacity: 1;
+            border-color: var(--color-border);
+        }
+
+        .btn-vmerge.active:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+
+        .btn-vmerge.active.btn-green,
+        .btn-main-run.active {
+            background-color: #238636;
+            border-color: rgba(240, 246, 252, 0.1);
+            color: #ffffff;
+        }
+        .btn-vmerge.active.btn-green:hover,
+        .btn-main-run.active:hover {
+            background-color: #2ea043;
+            border-color: #8b949e;
+        }
+
+        .btn-vmerge.active.btn-blue {
+            background-color: #1f6feb;
+            border-color: rgba(240, 246, 252, 0.1);
+            color: #ffffff;
+        }
+        .btn-vmerge.active.btn-blue:hover {
+            background-color: #388bfd;
+            border-color: #8b949e;
+        }
+
+        .btn-vmerge.active.btn-red {
+            background-color: #21262d;
+            color: #f85149;
+            border-color: var(--color-border);
+        }
+        .btn-vmerge.active.btn-red:hover {
+            background-color: #da3633;
+            border-color: #8b949e;
+            color: #ffffff;
+        }
+
+        .btn-vmerge:disabled {
+            opacity: 0.3;
+            border-color: var(--color-border);
+            background-color: var(--color-bg);
+            pointer-events: none;
+        }
+
+        #status { padding: 8px 15px; font-size: 13px; color: var(--color-fg-muted); background: var(--color-card); border-top: 1px solid var(--color-border); height: 35px; box-sizing: border-box; }
+
+        @media (max-width: 1100px) {
+            body { overflow-y: auto; height: auto; padding-top: 80px; }
+            .container { flex-direction: column; height: auto; }
+            .column { height: 500px; flex: none; }
+            .col-footer.tri-button, .col-footer.dual-button { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="lang-panel">
-        <button class="lang-btn active" onclick="setLang('ru')" id="btn-ru"><img src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU"></button>
-        <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img src="https://flagpedia.net/data/flags/h80/gb.png" alt="EN"></button>
-    </div>
+    <div class="lang-panel">
+        <button class="lang-btn active" onclick="setLang('ru')" id="btn-ru"><img src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU"></button>
+        <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img src="https://flagpedia.net/data/flags/h80/gb.png" alt="EN"></button>
+    </div>
 
-    <h2 id="main-title">V2Ray GeoLab</h2>
+    <h2 id="main-title">V2Ray GeoLab</h2>
 
-    <div class="container">
-        <div class="column">
-            <div class="col-header" id="label-input">Ввод</div>
-            <div class="editor-wrapper">
-                <div id="inputLineNums" class="line-numbers">1</div>
-                <textarea id="inputLinks" placeholder="Paste links here..." oninput="onInputLinks()" onscroll="syncScroll('input')"></textarea>
-            </div>
-            <div class="col-footer dual-button">
-                <button id="runBtn" class="btn btn-green" onclick="processLinks()">Пуск</button>
-                <button id="clrInputBtn" class="btn btn-red" onclick="clearInput()">Очистить</button>
-            </div>
-            <div id="status">> <span id="statusText">Ready</span></div>
-        </div>
+    <div class="container">
+        <div class="column">
+            <div class="col-header">
+                <h3 id="label-input">Ввод ссылок</h3>
+            </div>
+            <div class="editor-wrapper">
+                <div id="inputLineNums" class="line-numbers">1</div>
+                <textarea id="inputLinks" oninput="onInputLinks()" onscroll="syncScroll('input')"></textarea>
+            </div>
+            <div class="col-footer dual-button">
+                <button id="runBtn" class="btn-vmerge btn-main-run" onclick="processLinks()" disabled>Запустить обработку</button>
+                <button id="clrInputBtn" class="btn-vmerge btn-red" onclick="clearInput()" disabled><span id="text-clear-input">Очистить</span></button>
+            </div>
+            <div id="status">> <span id="statusText">Готов к работе</span></div>
+        </div>
 
-        <div class="column">
-            <div class="col-header">Результат</div>
-            <div class="editor-wrapper">
-                <div id="outputLineNums" class="line-numbers">1</div>
-                <textarea id="outputLinks" readonly onscroll="syncScroll('output')"></textarea>
-            </div>
-            <div class="col-footer quad-button">
-                <button class="btn" id="btn-copy" onclick="copyOutput()">Copy</button>
-                <button class="btn btn-blue" id="btn-retry" onclick="retryUnknown()">Retry</button>
-                <button class="btn btn-blue" id="btn-dl" onclick="downloadTxt()">Save</button>
-                <button class="btn btn-red" id="btn-clr" onclick="clearOutput()">Reset</button>
-            </div>
-        </div>
-    </div>
+        <div class="column">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" oninput="filterResults()">
+            </div>
+            <div class="editor-wrapper">
+                <div id="outputLineNums" class="line-numbers">1</div>
+                <textarea id="outputLinks" readonly onscroll="syncScroll('output')"></textarea>
+            </div>
+            <div class="col-footer tri-button">
+                <button class="btn-vmerge" id="btn-copy" onclick="copyOutput()" disabled><span id="text-copy">Копировать</span></button>
+                <button class="btn-vmerge btn-blue" id="btn-dl" onclick="downloadTxt()" disabled><span id="text-download">Скачать TXT</span></button>
+                <button class="btn-vmerge btn-red" id="btn-clr" onclick="clearOutput()" disabled><span id="text-clear">Очистить всё</span></button>
+            </div>
+        </div>
+    </div>
 
 <script>
-    const i18n = {
-        ru: { title: "V2Ray GeoLab", run: "Обработать", retry: "Перепроверить", done: "Готово!", wait: "Ждем API..." },
-        en: { title: "V2Ray GeoLab", run: "Process", retry: "Retry Unknown", done: "Finished!", wait: "API cooldown..." }
-    };
+    const i18n = {
+        ru: { 
+            title: "V2Ray GeoLab", 
+            inputLabel: "Ввод ссылок", 
+            inputPlaceholder: "Вставьте ссылки сюда (vmess://, vless://, ss://)...",
+            runBtn: "Запустить обработку", 
+            processing: "Обработка...", 
+            copy: "Копировать", 
+            download: "Скачать TXT", 
+            clear: "Очистить всё", 
+            clearInput: "Очистить",
+            copied: "Скопировано!", 
+            done: "Завершено!", 
+            ready: "Готов к работе", 
+            searchPlaceholder: "Поиск по результатам..." 
+        },
+        en: { 
+            title: "V2Ray GeoLab", 
+            inputLabel: "Input Links", 
+            inputPlaceholder: "Paste links here (vmess://, vless://, ss://)...",
+            runBtn: "Run Process", 
+            processing: "Processing...", 
+            copy: "Copy", 
+            download: "Download TXT", 
+            clear: "Clear All", 
+            clearInput: "Clear",
+            copied: "Copied!", 
+            done: "Done!", 
+            ready: "Ready", 
+            searchPlaceholder: "Search results..." 
+        }
+    };
 
-    let currentLang = 'ru';
-    let fullResults = [];
+    let currentLang = 'ru';
+    let fullResults = [];
 
-    function setLang(lang) {
-        currentLang = lang;
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.id === 'btn-'+lang));
-        document.getElementById('main-title').innerText = i18n[lang].title;
-        document.getElementById('runBtn').innerText = i18n[lang].run;
-        document.getElementById('btn-retry').innerText = i18n[lang].retry;
-    }
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + lang).classList.add('active');
+        
+        document.getElementById('main-title').innerText = i18n[lang].title;
+        document.getElementById('label-input').innerText = i18n[lang].inputLabel;
+        document.getElementById('inputLinks').placeholder = i18n[lang].inputPlaceholder;
+        document.getElementById('runBtn').innerText = i18n[lang].runBtn;
+        document.getElementById('text-copy').innerText = i18n[lang].copy;
+        document.getElementById('text-download').innerText = i18n[lang].download;
+        document.getElementById('text-clear').innerText = i18n[lang].clear;
+        document.getElementById('text-clear-input').innerText = i18n[lang].clearInput;
+        document.getElementById('searchInput').placeholder = i18n[lang].searchPlaceholder;
+        
+        const currentStatus = document.getElementById('statusText').innerText;
+        if (currentStatus.includes('Готов') || currentStatus.includes('Ready')) {
+            document.getElementById('statusText').innerText = i18n[lang].ready;
+        }
+    }
 
-    function syncScroll(type) {
-        document.getElementById(type + 'LineNums').scrollTop = document.getElementById(type + 'Links').scrollTop;
-    }
+    function syncScroll(type) {
+        const area = document.getElementById(type + 'Links');
+        const nums = document.getElementById(type + 'LineNums');
+        nums.scrollTop = area.scrollTop;
+    }
 
-    function updateLineNumbers(type) {
-        const lines = document.getElementById(type + 'Links').value.split('\n').length;
-        document.getElementById(type + 'LineNums').innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
-    }
+    function updateLineNumbers(type) {
+        const area = document.getElementById(type + 'Links');
+        const nums = document.getElementById(type + 'LineNums');
+        const lines = area.value.split('\n').length;
+        nums.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+    }
 
-    function onInputLinks() {
-        updateLineNumbers('input');
-        const hasText = document.getElementById('inputLinks').value.trim().length > 0;
-        document.getElementById('runBtn').classList.toggle('active', hasText);
-        document.getElementById('clrInputBtn').classList.toggle('active', hasText);
-    }
+    function onInputLinks() {
+        updateLineNumbers('input');
+        const hasText = document.getElementById('inputLinks').value.trim().length > 0;
+        
+        const runBtn = document.getElementById('runBtn');
+        runBtn.disabled = !hasText;
+        hasText ? runBtn.classList.add('active') : runBtn.classList.remove('active');
 
-    function getHost(link) {
-        try {
-            let base = link.split('#')[0].trim();
-            if (base.startsWith('vmess://')) {
-                let str = base.replace('vmess://', '');
-                while (str.length % 4 !== 0) str += '=';
-                const json = JSON.parse(atob(str));
-                return json.add;
-            }
-            const urlPart = base.split('://')[1];
-            return (urlPart.split('@')[1] || urlPart).split(':')[0].split('?')[0].split('/')[0];
-        } catch (e) { return null; }
-    }
+        const clrBtn = document.getElementById('clrInputBtn');
+        clrBtn.disabled = !hasText;
+        hasText ? clrBtn.classList.add('active') : clrBtn.classList.remove('active');
+    }
 
-    async function fetchCountry(host) {
-        if (!host) return "Error";
-        // Проверка: это IP или домен?
-        const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(host);
-        if (!isIp) return "Domain";
+    function clearInput() {
+        document.getElementById('inputLinks').value = "";
+        onInputLinks();
+        document.getElementById('statusText').innerText = i18n[currentLang].ready;
+    }
 
-        try {
-            // Используем надежный HTTPS API
-            const res = await fetch(`https://ipapi.co/${host}/json/`);
-            if (res.status === 429) return "LIMIT";
-            const data = await res.json();
-            return data.country_name || "Unknown";
-        } catch (e) {
-            console.error("Fetch error:", e);
-            return "Unknown";
-        }
-    }
+    function getIP(link) {
+        try {
+            let base = link.split('#')[0].trim();
+            if (base.startsWith('vmess://')) {
+                const json = JSON.parse(atob(base.replace('vmess://', '')));
+                return json.add;
+            } else {
+                const urlPart = base.split('://')[1];
+                const hostPart = urlPart.split('@')[1] || urlPart;
+                return hostPart.split(':')[0].split('?')[0].split('/')[0];
+            }
+        } catch (e) { return null; }
+    }
 
-    async function processLinks() {
-        const input = document.getElementById('inputLinks').value.split('\n').filter(l => l.trim());
-        if (!input.length) return;
+    async function fetchCountry(ip) {
+        if (!ip || ip === '127.0.0.1') return "Unknown";
+        try {
+            const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country`);
+            const data = await response.json();
+            return (data.status === 'success' && data.country) ? data.country : "Unknown";
+        } catch (e) { return "Unknown"; }
+    }
 
-        document.getElementById('runBtn').classList.remove('active');
-        fullResults = [];
-        
-        for (let i = 0; i < input.length; i++) {
-            const host = getHost(input[i]);
-            document.getElementById('statusText').innerText = `Processing ${i+1}/${input.length}: ${host}`;
-            
-            let country = await fetchCountry(host);
-            
-            if (country === "LIMIT") {
-                document.getElementById('statusText').innerText = i18n[currentLang].wait;
-                await new Promise(r => setTimeout(r, 3000));
-                country = await fetchCountry(host);
-            }
+    async function processLinks() {
+        const inputArea = document.getElementById('inputLinks');
+        const btn = document.getElementById('runBtn');
+        const clrBtn = document.getElementById('clrInputBtn');
+        const status = document.getElementById('statusText');
+        const lines = inputArea.value.split('\n').filter(l => l.trim() !== "");
+        if (lines.length === 0) return;
 
-            fullResults.push(`${input[i].split('#')[0]}#${country}`);
-            renderResults();
-            await new Promise(r => setTimeout(r, 1000)); // Пауза 1 сек
-        }
-        document.getElementById('statusText').innerText = i18n[currentLang].done;
-        onInputLinks();
-    }
+        btn.disabled = true;
+        btn.classList.remove('active');
+        clrBtn.disabled = true;
+        clrBtn.classList.remove('active');
+        
+        fullResults = [];
+        document.getElementById('outputLinks').value = "";
+        
+        for (let i = 0; i < lines.length; i++) {
+            status.innerText = `${i18n[currentLang].processing} ${i+1}/${lines.length}`;
+            const ip = getIP(lines[i]);
+            const country = await fetchCountry(ip);
+            const baseLink = lines[i].split('#')[0];
+            fullResults.push(`${baseLink}#${country}`);
+            renderResults(fullResults);
+            await new Promise(r => setTimeout(r, 150));
+        }
 
-    async function retryUnknown() {
-        for (let i = 0; i < fullResults.length; i++) {
-            if (fullResults[i].endsWith('#Unknown') || fullResults[i].endsWith('#LIMIT')) {
-                const host = getHost(fullResults[i]);
-                const country = await fetchCountry(host);
-                if (country !== "Unknown" && country !== "LIMIT") {
-                    fullResults[i] = `${fullResults[i].split('#')[0]}#${country}`;
-                    renderResults();
-                }
-                await new Promise(r => setTimeout(r, 1000));
-            }
-        }
-    }
+        status.innerText = i18n[currentLang].done;
+        btn.disabled = false;
+        btn.classList.add('active');
+        clrBtn.disabled = false;
+        clrBtn.classList.add('active');
+    }
 
-    function renderResults() {
-        const area = document.getElementById('outputLinks');
-        area.value = fullResults.join('\n');
-        updateLineNumbers('output');
-        const hasText = area.value.trim().length > 0;
-        document.getElementById('btn-copy').classList.toggle('active', hasText);
-        document.getElementById('btn-dl').classList.toggle('active', hasText);
-        document.getElementById('btn-clr').classList.toggle('active', hasText);
-        document.getElementById('btn-retry').classList.toggle('active', fullResults.some(l => l.includes('#Unknown')));
-    }
+    function renderResults(arr) {
+        const outputArea = document.getElementById('outputLinks');
+        outputArea.value = arr.join('\n');
+        updateLineNumbers('output');
+        updateButtonState();
+    }
 
-    function clearInput() { document.getElementById('inputLinks').value = ""; onInputLinks(); }
-    function clearOutput() { fullResults = []; renderResults(); }
-    function copyOutput() { navigator.clipboard.writeText(document.getElementById('outputLinks').value); }
-    function downloadTxt() {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([document.getElementById('outputLinks').value], {type:'text/plain'}));
-        a.download = "configs.txt"; a.click();
-    }
-    setLang('ru');
+    function filterResults() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = fullResults.filter(link => link.toLowerCase().includes(query));
+        renderResults(filtered);
+    }
+
+    function updateButtonState() {
+        const hasText = document.getElementById('outputLinks').value.trim().length > 0;
+        const ids = ['btn-copy', 'btn-dl', 'btn-clr'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            el.disabled = !hasText;
+            hasText ? el.classList.add('active') : el.classList.remove('active');
+        });
+    }
+
+    function clearOutput() { 
+        fullResults = [];
+        document.getElementById('outputLinks').value = ""; 
+        document.getElementById('searchInput').value = "";
+        updateLineNumbers('output'); 
+        updateButtonState();
+        document.getElementById('statusText').innerText = i18n[currentLang].ready;
+    }
+    
+    function copyOutput() { 
+        navigator.clipboard.writeText(document.getElementById('outputLinks').value);
+        const el = document.getElementById('text-copy');
+        const old = el.innerText;
+        el.innerText = i18n[currentLang].copied;
+        setTimeout(() => el.innerText = old, 2000);
+    }
+
+    function downloadTxt() {
+        const blob = new Blob([document.getElementById('outputLinks').value], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "renamed_configs.txt";
+        a.click();
+    }
+
+    setLang('ru');
 </script>
 </body>
 </html>
