@@ -103,17 +103,10 @@
             opacity: 0.5;
         }
 
-        .btn-vmerge.active {
-            color: var(--color-fg-default);
-            cursor: pointer;
-            opacity: 1;
-        }
-
+        .btn-vmerge.active { color: var(--color-fg-default); cursor: pointer; opacity: 1; }
         .btn-vmerge.active:hover { background-color: #30363d; border-color: #8b949e; }
         .btn-vmerge.active.btn-green { background-color: #238636; color: #fff; border-color: rgba(240,246,252,0.1); }
-        .btn-vmerge.active.btn-green:hover { background-color: #2ea043; }
         .btn-vmerge.active.btn-blue { background-color: #1f6feb; color: #fff; border-color: rgba(240,246,252,0.1); }
-        .btn-vmerge.active.btn-blue:hover { background-color: #388bfd; }
         .btn-vmerge.active.btn-red { color: #f85149; }
         .btn-vmerge.active.btn-red:hover { background-color: #da3633; color: #fff; }
 
@@ -174,51 +167,20 @@
 
 <script>
     const i18n = {
-        ru: { 
-            title: "V2Ray GeoLab", 
-            inputLabel: "Ввод ссылок", 
-            inputPlaceholder: "Вставьте ссылки сюда (vmess://, vless://, ss://)...",
-            runBtn: "Запустить обработку", 
-            processing: "Обработка...", 
-            copy: "Копировать", 
-            download: "Скачать TXT", 
-            clear: "Очистить всё", 
-            clearInput: "Очистить",
-            retry: "Перепроверить Unknown",
-            copied: "Скопировано!", 
-            done: "Завершено!", 
-            ready: "Готов к работе", 
-            searchPlaceholder: "Поиск по результатам..." 
-        },
-        en: { 
-            title: "V2Ray GeoLab", 
-            inputLabel: "Input Links", 
-            inputPlaceholder: "Paste links here (vmess://, vless://, ss://)...",
-            runBtn: "Run Process", 
-            processing: "Processing...", 
-            copy: "Copy", 
-            download: "Download TXT", 
-            clear: "Clear All", 
-            clearInput: "Clear",
-            retry: "Retry Unknown",
-            copied: "Copied!", 
-            done: "Done!", 
-            ready: "Ready", 
-            searchPlaceholder: "Search results..." 
-        }
+        ru: { title: "V2Ray GeoLab", inputLabel: "Ввод ссылок", runBtn: "Запустить обработку", processing: "Обработка...", copy: "Копировать", download: "Скачать TXT", clear: "Очистить всё", clearInput: "Очистить", retry: "Допроверить", copied: "Скопировано!", done: "Завершено!", ready: "Готов к работе", searchPlaceholder: "Поиск по результатам..." },
+        en: { title: "V2Ray GeoLab", inputLabel: "Input Links", runBtn: "Run Process", processing: "Processing...", copy: "Copy", download: "Download TXT", clear: "Clear All", clearInput: "Clear", retry: "Retry Unknown", copied: "Copied!", done: "Done!", ready: "Ready", searchPlaceholder: "Search results..." }
     };
 
     let currentLang = 'ru';
     let fullResults = [];
+    let geoCache = {}; // Кэш для экономии запросов
 
     function setLang(lang) {
         currentLang = lang;
         document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-' + lang).classList.add('active');
-        
         document.getElementById('main-title').innerText = i18n[lang].title;
         document.getElementById('label-input').innerText = i18n[lang].inputLabel;
-        document.getElementById('inputLinks').placeholder = i18n[lang].inputPlaceholder;
         document.getElementById('runBtn').innerText = i18n[lang].runBtn;
         document.getElementById('text-copy').innerText = i18n[lang].copy;
         document.getElementById('text-download').innerText = i18n[lang].download;
@@ -226,11 +188,7 @@
         document.getElementById('text-clear-input').innerText = i18n[lang].clearInput;
         document.getElementById('text-retry').innerText = i18n[lang].retry;
         document.getElementById('searchInput').placeholder = i18n[lang].searchPlaceholder;
-        
-        const statusEl = document.getElementById('statusText');
-        if (statusEl.innerText.includes('Готов') || statusEl.innerText.includes('Ready')) {
-            statusEl.innerText = i18n[lang].ready;
-        }
+        if (document.getElementById('statusText').innerText.match(/Готов|Ready/)) document.getElementById('statusText').innerText = i18n[lang].ready;
     }
 
     function syncScroll(type) {
@@ -249,50 +207,49 @@
     function onInputLinks() {
         updateLineNumbers('input');
         const hasText = document.getElementById('inputLinks').value.trim().length > 0;
-        const runBtn = document.getElementById('runBtn');
-        runBtn.disabled = !hasText;
-        hasText ? runBtn.classList.add('active') : runBtn.classList.remove('active');
-        const clrBtn = document.getElementById('clrInputBtn');
-        clrBtn.disabled = !hasText;
-        hasText ? clrBtn.classList.add('active') : clrBtn.classList.remove('active');
+        ['runBtn', 'clrInputBtn'].forEach(id => {
+            const el = document.getElementById(id);
+            el.disabled = !hasText;
+            hasText ? el.classList.add('active') : el.classList.remove('active');
+        });
     }
 
     function clearInput() {
         document.getElementById('inputLinks').value = "";
         onInputLinks();
-        document.getElementById('statusText').innerText = i18n[currentLang].ready;
     }
 
     function getIP(link) {
         try {
             let base = link.split('#')[0].trim();
             if (base.startsWith('vmess://')) {
-                let str = base.replace('vmess://', '');
-                str = str.replace(/-/g, '+').replace(/_/g, '/');
+                let str = base.replace('vmess://', '').replace(/-/g, '+').replace(/_/g, '/');
                 while (str.length % 4 !== 0) str += '=';
-                const json = JSON.parse(atob(str));
-                return json.add;
-            } else {
-                const urlPart = base.split('://')[1];
-                const hostPart = urlPart.split('@')[1] || urlPart;
-                return hostPart.split(':')[0].split('?')[0].split('/')[0];
+                return JSON.parse(atob(str)).add;
             }
+            const urlPart = base.split('://')[1];
+            const hostPart = urlPart.split('@')[1] || urlPart;
+            return hostPart.split(':')[0].split('?')[0].split('/')[0];
         } catch (e) { return null; }
     }
 
-    // ИСПОЛЬЗУЕМ HTTPS СЕРВИС IPWHO.IS ДЛЯ GITHUB PAGES
     async function fetchCountry(ip) {
-        if (!ip || ip === '127.0.0.1' || ip === '0.0.0.0') return "Unknown";
+        if (!ip || ip.match(/^(127\.|0\.|192\.168\.)/)) return "Local/Invalid";
+        if (geoCache[ip]) return geoCache[ip]; // Берем из кэша
+
         try {
-            const response = await fetch(`https://ipwho.is/${ip}`);
+            // Используем альтернативный API, если первый выдал 429
+            const response = await fetch(`https://ipapi.co/${ip}/json/`);
             if (response.ok) {
                 const data = await response.json();
-                return data.success ? data.country : "Unknown";
+                const result = data.country_name || "Unknown";
+                geoCache[ip] = result;
+                return result;
             }
+            if (response.status === 429) return "RateLimited";
             return "Unknown";
         } catch (e) { 
-            console.error(e);
-            return "Unknown"; 
+            return "Error"; 
         }
     }
 
@@ -301,26 +258,28 @@
         const btn = document.getElementById('runBtn');
         const status = document.getElementById('statusText');
         const lines = inputArea.value.split('\n').filter(l => l.trim() !== "");
-        if (lines.length === 0) return;
-
+        
         btn.disabled = true;
         btn.classList.remove('active');
-        
         fullResults = [];
         document.getElementById('outputLinks').value = "";
         
         for (let i = 0; i < lines.length; i++) {
             status.innerText = `${i18n[currentLang].processing} ${i+1}/${lines.length}`;
             const ip = getIP(lines[i]);
-            const country = await fetchCountry(ip);
-            const baseLink = lines[i].split('#')[0];
+            let country = await fetchCountry(ip);
             
-            // Добавляем флаг или название страны в #заголовок
-            fullResults.push(`${baseLink}#${country}`);
+            // Если получили лимит, ждем дольше и пробуем один раз перепроверить
+            if (country === "RateLimited") {
+                await new Promise(r => setTimeout(r, 2000));
+                country = await fetchCountry(ip);
+            }
+
+            fullResults.push(`${lines[i].split('#')[0]}#${country}`);
             renderResults(fullResults);
             
-            // Задержка, чтобы не забанили API (ipwho.is разрешает до 1000/мин, но лучше перестраховаться)
-            await new Promise(r => setTimeout(r, 100));
+            // Задержка 1.2 сек между запросами для предотвращения 429
+            if (!geoCache[ip]) await new Promise(r => setTimeout(r, 1200));
         }
 
         status.innerText = i18n[currentLang].done;
@@ -331,22 +290,19 @@
 
     async function retryUnknown() {
         const status = document.getElementById('statusText');
-        const retryBtn = document.getElementById('btn-retry');
-        retryBtn.disabled = true;
-        retryBtn.classList.remove('active');
+        document.getElementById('btn-retry').disabled = true;
 
         for (let i = 0; i < fullResults.length; i++) {
-            if (fullResults[i].endsWith('#Unknown')) {
-                status.innerText = `Retrying ${i+1}/${fullResults.length}`;
-                const baseLink = fullResults[i].split('#')[0];
-                const ip = getIP(baseLink);
+            if (fullResults[i].match(/RateLimited|Unknown|Error/)) {
+                const base = fullResults[i].split('#')[0];
+                status.innerText = `Retrying...`;
+                const ip = getIP(base);
                 const country = await fetchCountry(ip);
-                
-                if (country !== "Unknown") {
-                    fullResults[i] = `${baseLink}#${country}`;
+                if (!country.match(/RateLimited|Error/)) {
+                    fullResults[i] = `${base}#${country}`;
                     renderResults(fullResults);
                 }
-                await new Promise(r => setTimeout(r, 200));
+                await new Promise(r => setTimeout(r, 1500));
             }
         }
         status.innerText = i18n[currentLang].done;
@@ -354,67 +310,50 @@
     }
 
     function renderResults(arr) {
-        const outputArea = document.getElementById('outputLinks');
-        outputArea.value = arr.join('\n');
+        document.getElementById('outputLinks').value = arr.join('\n');
         updateLineNumbers('output');
         updateButtonState();
     }
 
     function filterResults() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = fullResults.filter(link => link.toLowerCase().includes(query));
-        const outputArea = document.getElementById('outputLinks');
-        outputArea.value = filtered.join('\n');
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.getElementById('outputLinks').value = fullResults.filter(l => l.toLowerCase().includes(q)).join('\n');
         updateLineNumbers('output');
     }
 
     function updateButtonState() {
-        const hasText = document.getElementById('outputLinks').value.trim().length > 0;
-        const hasUnknown = fullResults.some(l => l.endsWith('#Unknown'));
-        
-        const ids = ['btn-copy', 'btn-dl', 'btn-clr'];
-        ids.forEach(id => {
+        const hasText = document.getElementById('outputLinks').value.length > 0;
+        ['btn-copy', 'btn-dl', 'btn-clr'].forEach(id => {
             const el = document.getElementById(id);
             el.disabled = !hasText;
             hasText ? el.classList.add('active') : el.classList.remove('active');
         });
-
-        const retryBtn = document.getElementById('btn-retry');
-        retryBtn.disabled = !hasUnknown;
-        hasUnknown ? retryBtn.classList.add('active') : retryBtn.classList.remove('active');
+        const hasErr = fullResults.some(l => l.match(/RateLimited|Unknown|Error/));
+        document.getElementById('btn-retry').disabled = !hasErr;
+        hasErr ? document.getElementById('btn-retry').classList.add('active') : document.getElementById('btn-retry').classList.remove('active');
     }
 
     function clearOutput() { 
-        fullResults = [];
+        fullResults = []; 
         document.getElementById('outputLinks').value = ""; 
-        document.getElementById('searchInput').value = "";
-        updateLineNumbers('output'); 
-        updateButtonState();
-        document.getElementById('statusText').innerText = i18n[currentLang].ready;
+        updateButtonState(); 
+        updateLineNumbers('output');
     }
     
     function copyOutput() { 
-        const area = document.getElementById('outputLinks');
-        area.select();
-        navigator.clipboard.writeText(area.value);
-        const el = document.getElementById('text-copy');
-        const old = el.innerText;
-        el.innerText = i18n[currentLang].copied;
-        setTimeout(() => el.innerText = old, 2000);
+        navigator.clipboard.writeText(document.getElementById('outputLinks').value);
+        const t = document.getElementById('text-copy');
+        const old = t.innerText; t.innerText = i18n[currentLang].copied;
+        setTimeout(() => t.innerText = old, 2000);
     }
 
     function downloadTxt() {
-        const blob = new Blob([document.getElementById('outputLinks').value], {type: 'text/plain'});
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "geo_configs.txt";
-        a.click();
+        a.href = URL.createObjectURL(new Blob([document.getElementById('outputLinks').value], {type: 'text/plain'}));
+        a.download = "geo_configs.txt"; a.click();
     }
 
-    // Инициализация
     setLang('ru');
-    updateLineNumbers('input');
-    updateLineNumbers('output');
 </script>
 </body>
 </html>
