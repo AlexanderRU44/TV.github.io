@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V2Ray GeoLab Ultimate</title>
+    <title>V2Ray GeoLab</title>
     <style>
         :root {
             --color-bg: #0d1117;
@@ -23,108 +23,237 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             background-color: var(--color-bg); color: var(--color-fg-default); 
-            display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; 
+            display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; 
         }
 
-        .lang-panel { position: absolute; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100; }
-        .lang-btn { background: transparent; border: 2px solid transparent; padding: 2px; cursor: pointer; border-radius: 4px; opacity: 0.6; transition: 0.2s; }
-        .lang-btn img { width: 24px; display: block; }
-        .lang-btn.active { border-color: var(--color-blue); opacity: 1; }
-
-        h2 { color: #f0f6fc; font-size: 24px; margin: 0 0 20px 0; text-align: center; flex-shrink: 0; }
-        
-        .container { display: flex; gap: 15px; max-width: 1600px; margin: 0 auto; width: 100%; flex-grow: 1; min-height: 0; }
-        
-        .column { flex: 1; display: flex; flex-direction: column; background: var(--color-card); border-radius: 6px; border: 1px solid var(--color-border); overflow: hidden; }
-        .col-header { padding: 10px 15px; background: #1c2128; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; height: 45px; box-sizing: border-box; }
-        .col-header h3 { margin: 0; font-size: 11px; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 1px; }
-
-        .editor-wrapper { display: flex; flex: 1; overflow: hidden; background: var(--color-bg); }
-        .line-numbers { width: 40px; padding: 10px 0; text-align: center; background: var(--color-card); color: var(--color-line-nums); border-right: 1px solid var(--color-border); font-family: monospace; font-size: 13px; line-height: 20px; user-select: none; }
-        textarea { flex: 1; border: none; padding: 10px; background: transparent; color: var(--color-fg-default); font-family: monospace; font-size: 13px; line-height: 20px; resize: none; outline: none; overflow: auto; white-space: pre; }
-
-        .search-box { padding: 8px 15px; background: var(--color-card); border-bottom: 1px solid var(--color-border); }
-        .search-input { width: 100%; background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-fg-default); border-radius: 4px; padding: 6px 10px; font-size: 13px; box-sizing: border-box; }
-
-        .col-footer { padding: 10px; background: var(--color-card); border-top: 1px solid var(--color-border); display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); }
-        .quad-footer { grid-template-columns: repeat(4, 1fr); }
-
-        .btn { background: var(--color-btn-bg); color: var(--color-fg-muted); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn.active { color: var(--color-fg-default); opacity: 1; }
-        .btn-green.active { background: #238636; color: white; border: none; }
-        .btn-blue.active { background: #1f6feb; color: white; border: none; }
-        .btn-red.active:hover { background: #da3633; color: white; }
-
-        #status { padding: 6px 15px; font-size: 12px; color: var(--color-fg-muted); background: var(--color-card); border-top: 1px solid var(--color-border); height: 30px; }
-
-        @media (max-width: 900px) {
-            .container { flex-direction: column; overflow-y: auto; }
-            .column { min-height: 400px; flex: none; }
-            .quad-footer { grid-template-columns: repeat(2, 1fr); }
+        .lang-panel { position: absolute; top: 32px; right: 25px; display: flex; gap: 10px; z-index: 100; }
+        .lang-btn { 
+            background: transparent; border: 2px solid transparent; padding: 2px; 
+            cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center;
         }
+        .lang-btn img { width: 30px; height: auto; display: block; border-radius: 2px; }
+        .lang-btn.active { border-color: var(--color-blue); }
+
+        h2 { 
+            color: #f0f6fc; font-size: 28px; font-weight: 600; margin: 0 0 25px 0; 
+            text-align: center; letter-spacing: -0.5px; flex-shrink: 0; 
+        }
+        
+        .container { 
+            display: flex; gap: 15px; max-width: 1600px; margin: 0 auto; width: 100%; 
+            flex-grow: 1; min-height: 0; height: 82vh; 
+        }
+        
+        .column { 
+            flex: 1; display: flex; flex-direction: column; 
+            background: var(--color-card); border-radius: 6px; 
+            border: 1px solid var(--color-border); min-width: 0; overflow: hidden;
+        }
+
+        .col-header { 
+            padding: 10px 15px; background-color: #161b22; 
+            border-bottom: 1px solid var(--color-border); 
+            display: flex; align-items: center; justify-content: space-between;
+            height: 50px; box-sizing: border-box;
+        }
+        .col-header h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .editor-wrapper { display: flex; flex: 1; overflow: hidden; background-color: var(--color-bg); }
+
+        .line-numbers {
+            width: 45px; padding: 12px 0; text-align: center;
+            background: var(--color-card); color: var(--color-line-nums);
+            border-right: 1px solid var(--color-border); user-select: none;
+            overflow: hidden; font-family: ui-monospace, monospace; 
+            font-size: 14px; line-height: 22px; 
+        }
+
+        textarea { 
+            flex: 1; border: none; padding: 12px; background: transparent; color: var(--color-fg-default); 
+            font-family: ui-monospace, SFMono-Regular, monospace; 
+            font-size: 14px; line-height: 22px; 
+            resize: none; outline: none; overflow: auto; white-space: pre;
+        }
+
+        .search-box { padding: 10px 15px; background: var(--color-card); border-bottom: 1px solid var(--color-border); display: flex; gap: 8px; }
+        .search-input {
+            flex: 1; background: var(--color-bg); border: 1px solid var(--color-border);
+            color: var(--color-fg-default); border-radius: 6px; padding: 6px 12px; font-size: 14px; outline: none; height: 34px;
+        }
+
+        .col-footer { padding: 12px 15px; background-color: var(--color-card); border-top: 1px solid var(--color-border); display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .col-footer.dual-button { grid-template-columns: 1fr 1fr; }
+        .col-footer.quad-button { grid-template-columns: repeat(4, 1fr); }
+
+        .btn-vmerge {
+            background-color: var(--color-btn-bg);
+            color: var(--color-fg-muted);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+            opacity: 0.5;
+            box-shadow: 0 1px 0 rgba(1, 4, 9, 0.04);
+            white-space: nowrap;
+        }
+
+        .btn-vmerge.active {
+            color: var(--color-fg-default);
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        .btn-vmerge.active:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+
+        .btn-vmerge.active.btn-green,
+        .btn-main-run.active {
+            background-color: #238636;
+            border-color: rgba(240, 246, 252, 0.1);
+            color: #ffffff;
+        }
+
+        .btn-vmerge.active.btn-orange {
+            background-color: #af5700;
+            border-color: rgba(240, 246, 252, 0.1);
+            color: #ffffff;
+        }
+
+        .btn-vmerge.active.btn-red {
+            background-color: #21262d;
+            color: #f85149;
+            border-color: var(--color-border);
+        }
+        .btn-vmerge.active.btn-red:hover {
+            background-color: #da3633;
+            border-color: #8b949e;
+            color: #ffffff;
+        }
+
+        .btn-vmerge:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #status { padding: 8px 15px; font-size: 13px; color: var(--color-fg-muted); background: var(--color-card); border-top: 1px solid var(--color-border); height: 35px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <div class="lang-panel">
-        <button class="lang-btn active" onclick="setLang('ru')" id="btn-ru"><img src="https://flagcdn.com/w40/ru.png" alt="RU"></button>
-        <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img src="https://flagcdn.com/w40/gb.png" alt="EN"></button>
+        <button class="lang-btn active" onclick="setLang('ru')" id="btn-ru"><img src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU"></button>
+        <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img src="https://flagpedia.net/data/flags/h80/gb.png" alt="EN"></button>
     </div>
 
     <h2 id="main-title">V2Ray GeoLab</h2>
 
     <div class="container">
         <div class="column">
-            <div class="col-header"><h3 id="label-input">Ввод ссылок</h3></div>
+            <div class="col-header">
+                <h3 id="label-input">Ввод ссылок</h3>
+            </div>
             <div class="editor-wrapper">
                 <div id="inputLineNums" class="line-numbers">1</div>
-                <textarea id="inputLinks" oninput="onInputLinks()" onscroll="syncScroll('input')" placeholder="Вставьте ссылки (vmess, vless, ss)..."></textarea>
+                <textarea id="inputLinks" oninput="onInputLinks()" onscroll="syncScroll('input')"></textarea>
             </div>
-            <div class="col-footer">
-                <button id="runBtn" class="btn btn-green" onclick="processLinks()" disabled>Обработать</button>
-                <button id="clrInputBtn" class="btn btn-red" onclick="clearInput()" disabled>Очистить</button>
+            <div class="col-footer dual-button">
+                <button id="runBtn" class="btn-vmerge btn-main-run" onclick="processLinks()" disabled>Запустить обработку</button>
+                <button id="clrInputBtn" class="btn-vmerge btn-red" onclick="clearInput()" disabled><span id="text-clear-input">Очистить</span></button>
             </div>
-            <div id="status">> <span id="statusText">Готов</span></div>
+            <div id="status">> <span id="statusText">Готов к работе</span></div>
         </div>
 
         <div class="column">
             <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" oninput="filterResults()" placeholder="Поиск по стране...">
+                <input type="text" id="searchInput" class="search-input" oninput="filterResults()">
             </div>
             <div class="editor-wrapper">
                 <div id="outputLineNums" class="line-numbers">1</div>
                 <textarea id="outputLinks" readonly onscroll="syncScroll('output')"></textarea>
             </div>
-            <div class="col-footer quad-footer">
-                <button class="btn" id="btn-copy" onclick="copyOutput()" disabled><span id="text-copy">Копировать</span></button>
-                <button class="btn btn-blue" id="btn-retry" onclick="retryUnknown()" disabled>Retry</button>
-                <button class="btn btn-blue" id="btn-dl" onclick="downloadTxt()" disabled>TXT</button>
-                <button class="btn btn-red" id="btn-clr" onclick="clearOutput()" disabled>Удалить всё</button>
+            <div class="col-footer quad-button">
+                <button class="btn-vmerge" id="btn-copy" onclick="copyOutput()" disabled><span id="text-copy">Копировать</span></button>
+                <button class="btn-vmerge btn-orange" id="btn-retry" onclick="retryUnknown()" disabled><span id="text-retry">Переповторить Unknown</span></button>
+                <button class="btn-vmerge btn-blue" id="btn-dl" onclick="downloadTxt()" disabled><span id="text-download">Скачать TXT</span></button>
+                <button class="btn-vmerge btn-red" id="btn-clr" onclick="clearOutput()" disabled><span id="text-clear">Очистить всё</span></button>
             </div>
         </div>
     </div>
 
 <script>
     const i18n = {
-        ru: { title: "V2Ray GeoLab", input: "Ввод ссылок", run: "Обработать", copy: "Копировать", copied: "Готово!", ready: "Готов", done: "Завершено", search: "Поиск по стране..." },
-        en: { title: "V2Ray GeoLab", input: "Input Links", run: "Process", copy: "Copy", copied: "Copied!", ready: "Ready", done: "Done", search: "Search country..." }
+        ru: { 
+            title: "V2Ray GeoLab", 
+            labelInput: "Ввод ссылок",
+            placeholderInput: "Вставьте ссылки сюда...",
+            placeholderSearch: "Поиск по результатам...",
+            runBtn: "Запустить обработку", 
+            processing: "Обработка...", 
+            copy: "Копировать", 
+            download: "Скачать TXT", 
+            clear: "Очистить всё", 
+            clearInput: "Очистить",
+            retry: "Переповторить Unknown",
+            copied: "Скопировано!", 
+            done: "Завершено!", 
+            ready: "Готов к работе", 
+            separator: "--- НЕИЗВЕСТНО ---"
+        },
+        en: { 
+            title: "V2Ray GeoLab", 
+            labelInput: "Input Links",
+            placeholderInput: "Paste links here...",
+            placeholderSearch: "Search results...",
+            runBtn: "Run Process", 
+            processing: "Processing...", 
+            copy: "Copy", 
+            download: "Download TXT", 
+            clear: "Clear All", 
+            clearInput: "Clear",
+            retry: "Retry Unknown",
+            copied: "Copied!", 
+            done: "Done!", 
+            ready: "Ready", 
+            separator: "--- UNKNOWN ---"
+        }
     };
 
     let currentLang = 'ru';
-    let fullResults = [];
-    let geoCache = {};
+    let fullResults = []; 
+    let isProcessing = false;
 
     function setLang(lang) {
         currentLang = lang;
         document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-' + lang).classList.add('active');
+        
+        // Обновление текстов
         document.getElementById('main-title').innerText = i18n[lang].title;
-        document.getElementById('label-input').innerText = i18n[lang].input;
-        document.getElementById('runBtn').innerText = i18n[lang].run;
-        document.getElementById('searchInput').placeholder = i18n[lang].search;
-        const st = document.getElementById('statusText');
-        if (st.innerText.match(/Готов|Ready/)) st.innerText = i18n[lang].ready;
+        document.getElementById('label-input').innerText = i18n[lang].labelInput;
+        document.getElementById('inputLinks').placeholder = i18n[lang].placeholderInput;
+        document.getElementById('searchInput').placeholder = i18n[lang].placeholderSearch;
+        document.getElementById('runBtn').innerText = isProcessing ? i18n[lang].processing : i18n[lang].runBtn;
+        document.getElementById('text-clear-input').innerText = i18n[lang].clearInput;
+        document.getElementById('text-copy').innerText = i18n[lang].copy;
+        document.getElementById('text-retry').innerText = i18n[lang].retry;
+        document.getElementById('text-download').innerText = i18n[lang].download;
+        document.getElementById('text-clear').innerText = i18n[lang].clear;
+        
+        const statusText = document.getElementById('statusText');
+        if (!isProcessing) {
+             statusText.innerText = (statusText.innerText === i18n.ru.done || statusText.innerText === i18n.en.done) ? i18n[lang].done : i18n[lang].ready;
+        }
+
+        renderResults(fullResults);
     }
 
     function syncScroll(type) {
@@ -132,147 +261,167 @@
     }
 
     function updateLineNumbers(type) {
-        const lines = document.getElementById(type + 'Links').value.split('\n').length;
-        document.getElementById(type + 'LineNums').innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+        const area = document.getElementById(type + 'Links');
+        const nums = document.getElementById(type + 'LineNums');
+        const lines = area.value.split('\n').length;
+        nums.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
     }
 
     function onInputLinks() {
         updateLineNumbers('input');
         const hasText = document.getElementById('inputLinks').value.trim().length > 0;
-        ['runBtn', 'clrInputBtn'].forEach(id => {
-            const el = document.getElementById(id);
-            el.disabled = !hasText;
-            if (hasText) el.classList.add('active'); else el.classList.remove('active');
-        });
+        const runBtn = document.getElementById('runBtn');
+        const clrBtn = document.getElementById('clrInputBtn');
+        
+        runBtn.disabled = !hasText || isProcessing;
+        runBtn.classList.toggle('active', hasText && !isProcessing);
+        clrBtn.disabled = !hasText || isProcessing;
+        clrBtn.classList.toggle('active', hasText && !isProcessing);
+    }
+
+    function clearInput() {
+        document.getElementById('inputLinks').value = "";
+        onInputLinks();
     }
 
     function getIP(link) {
         try {
             let base = link.split('#')[0].trim();
             if (base.startsWith('vmess://')) {
-                let str = base.replace('vmess://', '').replace(/-/g, '+').replace(/_/g, '/');
-                while (str.length % 4 !== 0) str += '=';
-                return JSON.parse(atob(str)).add;
+                const json = JSON.parse(atob(base.replace('vmess://', '')));
+                return json.add;
+            } else {
+                const urlPart = base.split('://')[1];
+                const hostPart = urlPart.split('@')[1] || urlPart;
+                return hostPart.split(':')[0].split('?')[0].split('/')[0];
             }
-            const part = base.split('://')[1];
-            const hostPart = part.split('@')[1] || part;
-            return hostPart.split(':')[0].split('?')[0].split('/')[0];
         } catch (e) { return null; }
     }
 
-    // МНОГОУРОВНЕВЫЙ FETCH С ЗАЩИТОЙ ОТ 403
     async function fetchCountry(ip) {
-        if (!ip || ip.match(/^(127\.|0\.|192\.168\.|10\.|172\.)/)) return "Local/Invalid";
-        if (geoCache[ip]) return geoCache[ip];
-
-        const providers = [
-            { url: `https://freeipapi.com/api/json/${ip}`, key: 'countryName' },
-            { url: `https://ipapi.co/${ip}/json/`, key: 'country_name' },
-            { url: `https://reallyfreegeoip.org/json/${ip}`, key: 'country_name' }
-        ];
-
-        for (let p of providers) {
-            try {
-                const response = await fetch(p.url);
-                if (response.ok) {
-                    const data = await response.json();
-                    const result = data[p.key];
-                    if (result && result !== "Reserved") {
-                        geoCache[ip] = result;
-                        return result;
-                    }
-                }
-            } catch (e) {
-                console.warn(`Provider failed: ${p.url}`);
-            }
-        }
-        return "Blocked/Unknown";
+        if (!ip || ip === '127.0.0.1') return "Unknown";
+        try {
+            const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country`);
+            const data = await response.json();
+            return (data.status === 'success' && data.country) ? data.country : "Unknown";
+        } catch (e) { return "Unknown"; }
     }
 
     async function processLinks() {
         const lines = document.getElementById('inputLinks').value.split('\n').filter(l => l.trim() !== "");
-        const status = document.getElementById('statusText');
-        const runBtn = document.getElementById('runBtn');
-        
-        runBtn.disabled = true;
-        fullResults = [];
-        document.getElementById('outputLinks').value = "";
+        if (lines.length === 0) return;
 
+        isProcessing = true;
+        onInputLinks();
+        fullResults = [];
+
+        const status = document.getElementById('statusText');
         for (let i = 0; i < lines.length; i++) {
-            status.innerText = `${i18n[currentLang].run} ${i+1}/${lines.length}`;
+            status.innerText = `${i18n[currentLang].processing} ${i+1}/${lines.length}`;
             const ip = getIP(lines[i]);
             const country = await fetchCountry(ip);
-            
-            fullResults.push(`${lines[i].split('#')[0]}#${country}`);
+            fullResults.push({ base: lines[i].split('#')[0], country: country });
             renderResults(fullResults);
-            
-            // Если IP новый, ждем 1.3 сек. Если из кэша — пролетаем мгновенно.
-            if (!geoCache[ip]) await new Promise(r => setTimeout(r, 1300));
+            await new Promise(r => setTimeout(r, 150));
         }
 
         status.innerText = i18n[currentLang].done;
-        runBtn.disabled = false;
+        isProcessing = false;
+        onInputLinks();
         updateButtonState();
     }
 
     async function retryUnknown() {
+        const unknowns = fullResults.filter(r => r.country === "Unknown");
+        if (unknowns.length === 0) return;
+
+        isProcessing = true;
+        updateButtonState();
         const status = document.getElementById('statusText');
-        for (let i = 0; i < fullResults.length; i++) {
-            if (fullResults[i].match(/Blocked|Unknown/)) {
-                status.innerText = `Retry...`;
-                const base = fullResults[i].split('#')[0];
-                const country = await fetchCountry(getIP(base));
-                if (!country.match(/Blocked|Unknown/)) {
-                    fullResults[i] = `${base}#${country}`;
-                    renderResults(fullResults);
-                }
-                await new Promise(r => setTimeout(r, 1500));
+
+        for (let i = 0; i < unknowns.length; i++) {
+            status.innerText = `${i18n[currentLang].retry} ${i + 1}/${unknowns.length}`;
+            const ip = getIP(unknowns[i].base);
+            const country = await fetchCountry(ip);
+            if (country !== "Unknown") {
+                unknowns[i].country = country;
+                renderResults(fullResults);
             }
+            await new Promise(r => setTimeout(r, 200));
         }
+
         status.innerText = i18n[currentLang].done;
+        isProcessing = false;
+        updateButtonState();
     }
 
     function renderResults(arr) {
-        document.getElementById('outputLinks').value = arr.join('\n');
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        let filtered = arr.filter(item => 
+            item.base.toLowerCase().includes(query) || 
+            item.country.toLowerCase().includes(query)
+        );
+
+        const known = filtered.filter(r => r.country !== "Unknown");
+        const unknown = filtered.filter(r => r.country === "Unknown");
+
+        let outputText = "";
+        const knownLines = known.map(r => `${r.base}#${r.country}`);
+        const unknownLines = unknown.map(r => `${r.base}#${r.country}`);
+
+        if (knownLines.length > 0 && unknownLines.length > 0) {
+            outputText = knownLines.join('\n') + '\n' + i18n[currentLang].separator + '\n' + unknownLines.join('\n');
+        } else {
+            outputText = [...knownLines, ...unknownLines].join('\n');
+        }
+
+        document.getElementById('outputLinks').value = outputText;
         updateLineNumbers('output');
         updateButtonState();
     }
 
-    function filterResults() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        document.getElementById('outputLinks').value = fullResults.filter(l => l.toLowerCase().includes(q)).join('\n');
-        updateLineNumbers('output');
-    }
-
     function updateButtonState() {
-        const hasText = document.getElementById('outputLinks').value.length > 0;
+        const hasText = document.getElementById('outputLinks').value.trim().length > 0;
+        const hasUnknown = fullResults.some(r => r.country === "Unknown");
+        
         ['btn-copy', 'btn-dl', 'btn-clr'].forEach(id => {
             const el = document.getElementById(id);
-            el.disabled = !hasText;
-            if (hasText) el.classList.add('active'); else el.classList.remove('active');
+            el.disabled = !hasText || isProcessing;
+            el.classList.toggle('active', hasText && !isProcessing);
         });
-        const hasErr = fullResults.some(l => l.match(/Blocked|Unknown/));
-        document.getElementById('btn-retry').disabled = !hasErr;
-        if (hasErr) document.getElementById('btn-retry').classList.add('active');
+
+        const retryBtn = document.getElementById('btn-retry');
+        retryBtn.disabled = !hasUnknown || isProcessing;
+        retryBtn.classList.toggle('active', hasUnknown && !isProcessing);
     }
 
-    function clearInput() { document.getElementById('inputLinks').value = ""; onInputLinks(); }
-    function clearOutput() { fullResults = []; renderResults([]); }
-    
-    function copyOutput() { 
-        const area = document.getElementById('outputLinks');
-        area.select();
-        document.execCommand('copy');
-        const t = document.getElementById('text-copy');
-        t.innerText = i18n[currentLang].copied;
-        setTimeout(() => t.innerText = i18n[currentLang].copy, 2000);
+    function filterResults() { renderResults(fullResults); }
+
+    function clearOutput() {
+        fullResults = [];
+        renderResults([]);
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('outputLinks').value.split('\n')
+            .filter(line => line !== i18n['ru'].separator && line !== i18n['en'].separator)
+            .join('\n');
+        navigator.clipboard.writeText(text);
+        const el = document.getElementById('text-copy');
+        const old = el.innerText;
+        el.innerText = i18n[currentLang].copied;
+        setTimeout(() => el.innerText = old, 2000);
     }
 
     function downloadTxt() {
-        const blob = new Blob([document.getElementById('outputLinks').value], {type: 'text/plain'});
+        const text = document.getElementById('outputLinks').value.split('\n')
+            .filter(line => line !== i18n['ru'].separator && line !== i18n['en'].separator)
+            .join('\n');
+        const blob = new Blob([text], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = "geo_configs.txt"; a.click();
+        a.download = "geo_configs.txt";
+        a.click();
     }
 
     setLang('ru');
