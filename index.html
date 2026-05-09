@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V2Ray GeoLab Pro</title>
+    <title>V2Ray GeoLab Ultimate</title>
     <style>
         :root {
             --color-bg: #0d1117;
@@ -37,7 +37,7 @@
         
         .column { flex: 1; display: flex; flex-direction: column; background: var(--color-card); border-radius: 6px; border: 1px solid var(--color-border); overflow: hidden; }
         .col-header { padding: 10px 15px; background: #1c2128; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; height: 45px; box-sizing: border-box; }
-        .col-header h3 { margin: 0; font-size: 12px; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .col-header h3 { margin: 0; font-size: 11px; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 1px; }
 
         .editor-wrapper { display: flex; flex: 1; overflow: hidden; background: var(--color-bg); }
         .line-numbers { width: 40px; padding: 10px 0; text-align: center; background: var(--color-card); color: var(--color-line-nums); border-right: 1px solid var(--color-border); font-family: monospace; font-size: 13px; line-height: 20px; user-select: none; }
@@ -50,7 +50,7 @@
         .quad-footer { grid-template-columns: repeat(4, 1fr); }
 
         .btn { background: var(--color-btn-bg); color: var(--color-fg-muted); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn.active { color: var(--color-fg-default); opacity: 1; }
         .btn-green.active { background: #238636; color: white; border: none; }
         .btn-blue.active { background: #1f6feb; color: white; border: none; }
@@ -79,7 +79,7 @@
             <div class="col-header"><h3 id="label-input">Ввод ссылок</h3></div>
             <div class="editor-wrapper">
                 <div id="inputLineNums" class="line-numbers">1</div>
-                <textarea id="inputLinks" oninput="onInputLinks()" onscroll="syncScroll('input')" placeholder="vmess://, vless://, ss://..."></textarea>
+                <textarea id="inputLinks" oninput="onInputLinks()" onscroll="syncScroll('input')" placeholder="Вставьте ссылки (vmess, vless, ss)..."></textarea>
             </div>
             <div class="col-footer">
                 <button id="runBtn" class="btn btn-green" onclick="processLinks()" disabled>Обработать</button>
@@ -160,29 +160,33 @@
         } catch (e) { return null; }
     }
 
+    // МНОГОУРОВНЕВЫЙ FETCH С ЗАЩИТОЙ ОТ 403
     async function fetchCountry(ip) {
         if (!ip || ip.match(/^(127\.|0\.|192\.168\.|10\.|172\.)/)) return "Local/Invalid";
         if (geoCache[ip]) return geoCache[ip];
 
-        // Список API для перебора в случае 403 или 429
-        const apis = [
-            `https://freeipapi.com/api/json/${ip}`,
-            `https://ipwho.is/${ip}`
+        const providers = [
+            { url: `https://freeipapi.com/api/json/${ip}`, key: 'countryName' },
+            { url: `https://ipapi.co/${ip}/json/`, key: 'country_name' },
+            { url: `https://reallyfreegeoip.org/json/${ip}`, key: 'country_name' }
         ];
 
-        for (let apiUrl of apis) {
+        for (let p of providers) {
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(p.url);
                 if (response.ok) {
                     const data = await response.json();
-                    // Унификация ответа для разных API
-                    const country = data.countryName || data.country || "Unknown";
-                    geoCache[ip] = country;
-                    return country;
+                    const result = data[p.key];
+                    if (result && result !== "Reserved") {
+                        geoCache[ip] = result;
+                        return result;
+                    }
                 }
-            } catch (e) { console.error("API Error:", apiUrl); }
+            } catch (e) {
+                console.warn(`Provider failed: ${p.url}`);
+            }
         }
-        return "Unknown/Error";
+        return "Blocked/Unknown";
     }
 
     async function processLinks() {
@@ -202,8 +206,8 @@
             fullResults.push(`${lines[i].split('#')[0]}#${country}`);
             renderResults(fullResults);
             
-            // Если IP не в кэше, ждем 1.5 сек для стабильности API
-            if (!geoCache[ip]) await new Promise(r => setTimeout(r, 1500));
+            // Если IP новый, ждем 1.3 сек. Если из кэша — пролетаем мгновенно.
+            if (!geoCache[ip]) await new Promise(r => setTimeout(r, 1300));
         }
 
         status.innerText = i18n[currentLang].done;
@@ -214,11 +218,11 @@
     async function retryUnknown() {
         const status = document.getElementById('statusText');
         for (let i = 0; i < fullResults.length; i++) {
-            if (fullResults[i].match(/Error|Unknown/)) {
+            if (fullResults[i].match(/Blocked|Unknown/)) {
                 status.innerText = `Retry...`;
                 const base = fullResults[i].split('#')[0];
                 const country = await fetchCountry(getIP(base));
-                if (!country.match(/Error|Unknown/)) {
+                if (!country.match(/Blocked|Unknown/)) {
                     fullResults[i] = `${base}#${country}`;
                     renderResults(fullResults);
                 }
@@ -247,7 +251,7 @@
             el.disabled = !hasText;
             if (hasText) el.classList.add('active'); else el.classList.remove('active');
         });
-        const hasErr = fullResults.some(l => l.match(/Error|Unknown/));
+        const hasErr = fullResults.some(l => l.match(/Blocked|Unknown/));
         document.getElementById('btn-retry').disabled = !hasErr;
         if (hasErr) document.getElementById('btn-retry').classList.add('active');
     }
@@ -268,7 +272,7 @@
         const blob = new Blob([document.getElementById('outputLinks').value], {type: 'text/plain'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = "configs.txt"; a.click();
+        a.download = "geo_configs.txt"; a.click();
     }
 
     setLang('ru');
