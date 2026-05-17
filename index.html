@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="menuScreen" class="screen active">
+        <h1 class="game-title ui-title-text">Крестики-Нолики</h1>
+        <div class="settings-panel">
+            <div class="setting-group">
+                <label id="ui-l-lang">Язык</label>
+                <select id="langSelect" onchange="setLanguage(this.value)">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label id="ui-l-mode">Режим</label>
+                    <button class="info-btn" onclick="showHelp()">?</button>
+                </div>
+                <select id="gameMode" onchange="toggleDifficultyVisibility()">
+                    <option value="ai" id="ui-o-ai">Против Робота</option>
+                    <option value="pvp" id="ui-o-pvp">Вдвоем</option>
+                </select>
+            </div>
+            <div class="setting-group" id="difficultyGroup">
+                <label id="ui-l-diff">Сложность ИИ</label>
+                <select id="aiDifficulty">
+                    <option value="easy" id="ui-o-easy">Легко</option>
+                    <option value="medium" id="ui-o-medium" selected>Средне</option>
+                    <option value="hard" id="ui-o-hard">Невозможно</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label id="ui-l-size">Поле</label>
+                <select id="boardSize">
+                    <option value="3">3 x 3</option>
+                    <option value="4">4 x 4</option>
+                    <option value="5">5 x 5</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label id="ui-l-skin">Скины</label>
+                <select id="skinSelect">
+                    <option value="classic">❌ / ⭕</option>
+                    <option value="elemental">🔥 / ❄️</option>
+                    <option value="animals">🐱 / 🐶</option>
+                </select>
+            </div>
+        </div>
+        <button class="control-btn" id="startGame" onclick="goToGame()">Играть</button>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <h1 class="game-title ui-title-text">Крестики-Нолики</h1>
+        <div class="score-board">
+            <div class="score-values">
+                <span id="ui-pX">Игрок X</span>: <span id="scoreX">0</span> | 
+                <span id="ui-pO">Игрок O</span>: <span id="scoreO">0</span>
+            </div>
+            <button class="control-btn" id="resetScores" onclick="resetAllScores()">Сбросить счет</button>
+        </div>
+        <div class="timer-container"><div class="timer-bar" id="timerBar"></div></div>
+        <div class="status" id="status"></div>
+        <div id="board" class="board"></div>
+        <div class="buttons">
+            <button class="control-btn" id="nextLevel" onclick="startRound()">Далее</button>
+            <button class="control-btn" id="backToMenu" onclick="goToMenu()">В меню</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-content">
+            <h2 id="ui-m-title" style="margin-bottom:15px; text-align: center;">Инфо</h2>
+            <div id="modalBody"></div>
+            <button class="control-btn" style="width:100%; margin-top: 10px;" onclick="toggleModal(false)">OK</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
